@@ -7,6 +7,7 @@ metadata:
     component: jobservice
 spec:
   replicas: {{ .Values.jobservice.replicas }}
+  revisionHistoryLimit: {{ .Values.jobservice.revisionHistoryLimit }}
   strategy:
     type: {{ .Values.updateStrategy.type }}
     {{- if eq .Values.updateStrategy.type "Recreate" }}
@@ -45,7 +46,8 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: {{ .Values.jobservice.automountServiceAccountToken | default false }}
+      terminationGracePeriodSeconds: 120
       containers:
       - name: jobservice
         image: {{ .Values.jobservice.image.repository }}:{{ .Values.jobservice.image.tag }}
@@ -135,4 +137,7 @@ spec:
     {{- with .Values.jobservice.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.jobservice.priorityClassName }}
+      priorityClassName: {{ .Values.jobservice.priorityClassName }}
     {{- end }}
